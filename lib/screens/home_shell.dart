@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../auth/auth_service.dart';
 import '../data/attachment_repository.dart';
 import '../data/expense_repository.dart';
 import '../models/expense.dart';
@@ -16,11 +17,15 @@ class HomeShell extends StatefulWidget {
   const HomeShell({
     required this.repository,
     required this.attachmentRepository,
+    required this.user,
+    required this.onSignOut,
     super.key,
   });
 
   final ExpenseRepository repository;
   final AttachmentRepository attachmentRepository;
+  final AuthUser user;
+  final Future<void> Function() onSignOut;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -256,7 +261,7 @@ class _HomeShellState extends State<HomeShell> {
                   expenses: _expenses,
                   onExport: _exportCurrentQuarter,
                 ),
-                const ProfilePage(),
+                ProfilePage(user: widget.user, onSignOut: widget.onSignOut),
               ],
             ),
       bottomNavigationBar: _loading

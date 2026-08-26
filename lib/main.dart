@@ -1,14 +1,19 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'auth/auth_service.dart';
+import 'auth/firebase_auth_service.dart';
 import 'data/attachment_repository.dart';
 import 'data/expense_repository.dart';
-import 'screens/home_shell.dart';
+import 'firebase_options.dart';
+import 'screens/auth_gate.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -21,8 +26,14 @@ void main() {
 }
 
 class RutaClaraApp extends StatelessWidget {
-  const RutaClaraApp({super.key, this.repository, this.attachmentRepository});
+  const RutaClaraApp({
+    super.key,
+    this.authService,
+    this.repository,
+    this.attachmentRepository,
+  });
 
+  final AuthService? authService;
   final ExpenseRepository? repository;
   final AttachmentRepository? attachmentRepository;
 
@@ -32,9 +43,10 @@ class RutaClaraApp extends StatelessWidget {
       title: 'RutaClara',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: HomeShell(
-        repository: repository ?? ExpenseRepository(),
-        attachmentRepository: attachmentRepository ?? AttachmentRepository(),
+      home: AuthGate(
+        authService: authService ?? FirebaseAuthService(),
+        repository: repository,
+        attachmentRepository: attachmentRepository,
       ),
     );
   }

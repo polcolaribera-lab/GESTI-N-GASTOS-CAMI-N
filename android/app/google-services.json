@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "753904785869",
+    "project_id": "rutaclara-gastos-polco",
+    "storage_bucket": "rutaclara-gastos-polco.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:753904785869:android:43885016097a896444cc84",
+        "android_client_info": {
+          "package_name": "com.rutaclara.ruta_clara"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "753904785869-f6bo5m3b8tgd1pl0r6l69pe9aep19200.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rutaclara.ruta_clara",
+            "certificate_hash": "c37ffbfccc4c71b31fe0210303007287fe83ecb9"
+          }
+        },
+        {
+          "client_id": "753904785869-2ru0k6ohi29ghumm6268g9qou1r24al9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCaDDwgwh6q7fU5AxA3nnnMfDm9db_3bDw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "753904785869-2ru0k6ohi29ghumm6268g9qou1r24al9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

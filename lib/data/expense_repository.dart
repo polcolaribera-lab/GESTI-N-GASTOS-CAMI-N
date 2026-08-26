@@ -5,11 +5,32 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/expense.dart';
 
 class ExpenseRepository {
-  static const _storageKey = 'ruta_clara_expenses_v1';
+  ExpenseRepository({String? userId})
+    : _userId = userId,
+      _storageKey = userId == null
+          ? _legacyStorageKey
+          : '${_legacyStorageKey}_$userId';
+
+  static const _legacyStorageKey = 'ruta_clara_expenses_v1';
+  static const _legacyOwnerKey = 'ruta_clara_expenses_v1_owner';
+
+  final String? _userId;
+  final String _storageKey;
 
   Future<List<Expense>> loadExpenses() async {
     final preferences = await SharedPreferences.getInstance();
-    final storedValue = preferences.getString(_storageKey);
+    var storedValue = preferences.getString(_storageKey);
+
+    if (storedValue == null && _userId != null) {
+      final legacyValue = preferences.getString(_legacyStorageKey);
+      final legacyOwner = preferences.getString(_legacyOwnerKey);
+      if (legacyValue != null &&
+          (legacyOwner == null || legacyOwner == _userId)) {
+        await preferences.setString(_legacyOwnerKey, _userId);
+        await preferences.setString(_storageKey, legacyValue);
+        storedValue = legacyValue;
+      }
+    }
 
     if (storedValue == null) {
       final examples = _exampleExpenses();

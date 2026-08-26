@@ -16,7 +16,10 @@ preparado para Android/Google Play.
 - Justificantes guardados localmente y asociados a cada gasto.
 - Exportación trimestral ZIP para la gestoría con CSV, resumen y justificantes.
 - Resumen fiscal trimestral orientativo.
-- Persistencia local en el dispositivo.
+- Registro e inicio de sesión con correo y contraseña mediante Firebase.
+- Inicio de sesión con una cuenta de Google en Android y web.
+- Recuperación de contraseña, sesión persistente y cierre de sesión.
+- Persistencia local separada para cada cuenta en el dispositivo.
 - Datos de ejemplo en el primer inicio para poder recorrer la interfaz.
 
 ## Ejecutar la app
@@ -27,6 +30,25 @@ Necesitas Flutter 3.44 o posterior y un emulador Android o teléfono conectado.
 flutter pub get
 flutter run
 ```
+
+Para abrirla directamente en Chrome:
+
+```powershell
+flutter run -d chrome
+```
+
+La app ya está conectada al proyecto Firebase `rutaclara-gastos-polco` para
+Android y web. Los proveedores Correo/Contraseña y Google están declarados en
+`firebase.json`. Si se modifica esa configuración, se despliega con:
+
+```powershell
+firebase deploy --only auth --project rutaclara-gastos-polco
+```
+
+La huella SHA del certificado de desarrollo ya está registrada. Antes de
+publicar en Google Play hay que registrar también en Firebase la huella SHA-1
+del certificado de firma de aplicaciones que muestre Play Console y volver a
+descargar `android/app/google-services.json`.
 
 Para comprobar el proyecto:
 
@@ -49,6 +71,7 @@ configurar una clave de firma propia y revisar el identificador
 ## Estructura
 
 - `lib/models`: modelo de gasto y categorías.
+- `lib/auth`: acceso y sesión con Firebase Authentication.
 - `lib/data`: guardado local.
 - `lib/screens`: panel, gastos, fiscal y perfil.
 - `lib/widgets`: componentes reutilizables y formulario.

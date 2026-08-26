@@ -1,10 +1,37 @@
 import 'package:flutter/material.dart';
 
+import '../auth/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/page_header.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+  const ProfilePage({required this.user, required this.onSignOut, super.key});
+
+  final AuthUser user;
+  final Future<void> Function() onSignOut;
+
+  Future<void> _confirmSignOut(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Cerrar sesión'),
+        content: const Text(
+          'Tendrás que volver a introducir tu correo y contraseña para entrar.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Cerrar sesión'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) await onSignOut();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,9 +79,11 @@ class ProfilePage extends StatelessWidget {
                                 ?.copyWith(color: Colors.white),
                           ),
                           const SizedBox(height: 3),
-                          const Text(
-                            'Plan inicial · Datos locales',
-                            style: TextStyle(
+                          Text(
+                            user.email,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
                               color: Colors.white60,
                               fontSize: 12,
                             ),
@@ -98,6 +127,48 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 28),
+              Text('Tu sesión', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: AppColors.mint,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(
+                          Icons.verified_user_outlined,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 13),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Cuenta conectada',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              user.email,
+                              style: Theme.of(context).textTheme.bodySmall,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
               Text('Privacidad', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 12),
               Card(
@@ -130,7 +201,7 @@ class ProfilePage extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Esta primera versión guarda los gastos únicamente en este dispositivo.',
+                              'Tu cuenta se protege con Firebase. Los gastos y justificantes se guardan únicamente en este dispositivo y separados por cuenta.',
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],
@@ -166,6 +237,20 @@ class ProfilePage extends StatelessWidget {
                         title: 'Copia de seguridad',
                       ),
                     ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 22),
+              OutlinedButton.icon(
+                onPressed: () => _confirmSignOut(context),
+                icon: const Icon(Icons.logout_rounded),
+                label: const Text('Cerrar sesión'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.danger,
+                  side: const BorderSide(color: AppColors.danger),
+                  minimumSize: const Size.fromHeight(52),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
               ),
