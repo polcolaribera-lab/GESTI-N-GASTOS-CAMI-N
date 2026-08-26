@@ -34,6 +34,10 @@ class FiscalPage extends StatelessWidget {
       0.0,
       (sum, item) => sum + item.deductibleVat,
     );
+    final withheldIrpf = quarterExpenses.fold(
+      0.0,
+      (sum, item) => sum + item.irpfAmount,
+    );
     final total = quarterExpenses.fold(0.0, (sum, item) => sum + item.amount);
     final missingReceipts = quarterExpenses
         .where((item) => item.attachments.isEmpty)
@@ -72,6 +76,7 @@ class FiscalPage extends StatelessWidget {
               _FiscalHero(
                 supportedVat: supportedVat,
                 deductibleBase: deductibleBase,
+                withheldIrpf: withheldIrpf,
               ),
               const SizedBox(height: 14),
               Row(
@@ -291,10 +296,15 @@ class _ExportCardState extends State<_ExportCard> {
 }
 
 class _FiscalHero extends StatelessWidget {
-  const _FiscalHero({required this.supportedVat, required this.deductibleBase});
+  const _FiscalHero({
+    required this.supportedVat,
+    required this.deductibleBase,
+    required this.withheldIrpf,
+  });
 
   final double supportedVat;
   final double deductibleBase;
+  final double withheldIrpf;
 
   @override
   Widget build(BuildContext context) {
@@ -362,6 +372,31 @@ class _FiscalHero extends StatelessWidget {
                 const Spacer(),
                 Text(
                   euro(deductibleBase),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                const Text(
+                  'IRPF retenido en gastos',
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+                const Spacer(),
+                Text(
+                  euro(withheldIrpf),
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,

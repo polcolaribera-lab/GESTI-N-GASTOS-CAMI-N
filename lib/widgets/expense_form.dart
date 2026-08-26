@@ -43,6 +43,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
   ExpenseCategory _category = ExpenseCategory.fuel;
   DateTime _date = DateTime.now();
   double _vatRate = 21;
+  double _irpfRate = 0;
   bool _deductible = true;
   String _paymentMethod = 'Tarjeta';
   int _prorationMonths = 1;
@@ -67,6 +68,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
     _category = expense.category;
     _date = expense.date;
     _vatRate = expense.vatRate;
+    _irpfRate = expense.irpfRate;
     _deductible = expense.deductible;
     _paymentMethod = expense.paymentMethod;
     _prorationMonths = expense.prorationMonths;
@@ -322,6 +324,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
           date: _date,
           category: _category,
           vatRate: _vatRate,
+          irpfRate: _irpfRate,
           deductible: _deductible,
           paymentMethod: _paymentMethod,
           prorationMonths: _category == ExpenseCategory.insurance
@@ -338,6 +341,8 @@ class _ExpenseFormState extends State<ExpenseForm> {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     final base = _vatRate == 0 ? _amount : _amount / (1 + _vatRate / 100);
     final vat = _amount - base;
+    final irpf = base * _irpfRate / 100;
+    final payable = _amount - irpf;
 
     return SafeArea(
       child: Padding(
@@ -499,7 +504,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
                             : null,
                       ),
                       const SizedBox(height: 20),
-                      _FieldLabel(label: 'Importe total'),
+                      _FieldLabel(label: 'Importe total de factura'),
                       TextFormField(
                         controller: _amountController,
                         onChanged: (_) => setState(() {}),
@@ -628,6 +633,25 @@ class _ExpenseFormState extends State<ExpenseForm> {
                           );
                         }).toList(),
                       ),
+                      const SizedBox(height: 18),
+                      _FieldLabel(label: 'Retención IRPF'),
+                      Wrap(
+                        spacing: 8,
+                        children: [0.0, 15.0].map((rate) {
+                          return ChoiceChip(
+                            label: Text('${rate.toInt()} %'),
+                            selected: _irpfRate == rate,
+                            selectedColor: AppColors.accentSoft,
+                            checkmarkColor: AppColors.ink,
+                            onSelected: (_) => setState(() => _irpfRate = rate),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        'Selecciona 15 % solamente si aparece esa retención en la factura.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                       if (_amount > 0) ...[
                         const SizedBox(height: 10),
                         Container(
@@ -645,12 +669,25 @@ class _ExpenseFormState extends State<ExpenseForm> {
                               ),
                               const SizedBox(width: 9),
                               Expanded(
-                                child: Text(
-                                  'Base ${euro(base)}  ·  IVA ${euro(vat)}',
-                                  style: const TextStyle(
-                                    color: AppColors.primaryDark,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Base ${euro(base)}  ·  IVA ${euro(vat)}',
+                                      style: const TextStyle(
+                                        color: AppColors.primaryDark,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      'IRPF ${_irpfRate.toInt()} %: −${euro(irpf)}  ·  A pagar ${euro(payable)}',
+                                      style: const TextStyle(
+                                        color: AppColors.primaryDark,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],

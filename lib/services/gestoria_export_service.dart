@@ -117,6 +117,9 @@ class GestoriaExportService {
       'Base imponible',
       'IVA %',
       'IVA soportado',
+      'IRPF %',
+      'IRPF retenido',
+      'Total pagado',
       'Deducible',
       'Base deducible',
       'IVA deducible',
@@ -139,6 +142,9 @@ class GestoriaExportService {
           _decimal(expense.baseAmount),
           _decimal(expense.vatRate),
           _decimal(expense.vatAmount),
+          _decimal(expense.irpfRate),
+          _decimal(expense.irpfAmount),
+          _decimal(expense.payableAmount),
           expense.deductible ? 'Sí' : 'No',
           _decimal(expense.deductibleBase),
           _decimal(expense.deductibleVat),
@@ -174,6 +180,10 @@ class GestoriaExportService {
       0.0,
       (sum, item) => sum + item.deductibleVat,
     );
+    final withheldIrpf = expenses.fold(
+      0.0,
+      (sum, item) => sum + item.irpfAmount,
+    );
     final buffer = StringBuffer()
       ..writeln('RUTACLARA - PAQUETE PARA GESTORÍA')
       ..writeln('Periodo: ${quarter}T $year')
@@ -183,11 +193,12 @@ class GestoriaExportService {
       ..writeln('Importe total: ${euro(total)}')
       ..writeln('Base deducible: ${euro(deductibleBase)}')
       ..writeln('IVA soportado deducible: ${euro(deductibleVat)}')
+      ..writeln('IRPF retenido: ${euro(withheldIrpf)}')
       ..writeln('Justificantes incluidos: $attachmentCount')
       ..writeln('Gastos sin justificante digital: $withoutDigitalReceiptCount')
       ..writeln()
       ..writeln('CONTENIDO')
-      ..writeln('- CSV con el detalle de gastos, base e IVA.')
+      ..writeln('- CSV con el detalle de gastos, base, IVA e IRPF.')
       ..writeln('- Carpeta justificantes, ordenada por gasto.')
       ..writeln('- Este resumen de control.');
 

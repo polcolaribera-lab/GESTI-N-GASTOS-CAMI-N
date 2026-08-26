@@ -30,6 +30,7 @@ void main() {
       date: DateTime(2026, 8, 14),
       category: ExpenseCategory.fuel,
       vatRate: 21,
+      irpfRate: 15,
       deductible: true,
       paymentMethod: 'Tarjeta',
       attachments: const [
@@ -58,7 +59,10 @@ void main() {
     expect(csv, isNotNull);
     expect(utf8.decode(csv!.content), contains('Estación Norte'));
     expect(utf8.decode(csv.content), contains('121,00'));
+    expect(utf8.decode(csv.content), contains('IRPF retenido'));
+    expect(utf8.decode(csv.content), contains('106,00'));
     expect(summary, isNotNull);
+    expect(utf8.decode(summary!.content), contains('IRPF retenido'));
     expect(invoice, hasLength(1));
     expect(invoice.single.content, invoiceBytes);
   });

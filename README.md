@@ -8,6 +8,7 @@ preparado para Android/Google Play.
 - Panel mensual con presupuesto, gasto deducible e IVA soportado.
 - Alta rápida de gastos con categoría, proveedor, fecha y forma de pago.
 - Cálculo automático de base imponible e IVA incluido.
+- Retención de IRPF opcional al 15 %, con cálculo del importe retenido y total pagado.
 - Histórico con búsqueda, filtros y borrado reversible.
 - Edición de cualquier gasto tocando su tarjeta.
 - Eliminación visible con confirmación y opción de deshacer.

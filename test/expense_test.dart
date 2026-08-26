@@ -107,4 +107,28 @@ void main() {
     expect(withoutAttachment.hasReceipt, isFalse);
     expect(withAttachment.hasReceipt, isTrue);
   });
+
+  test('calcula una retención de IRPF del 15 por ciento', () {
+    final expense = Expense(
+      id: 'professional-invoice',
+      description: 'Servicio profesional',
+      supplier: 'Profesional',
+      amount: 242,
+      date: DateTime(2026, 8, 20),
+      category: ExpenseCategory.other,
+      vatRate: 21,
+      irpfRate: 15,
+      deductible: true,
+      paymentMethod: 'Banco',
+    );
+
+    expect(expense.baseAmount, closeTo(200, 0.001));
+    expect(expense.vatAmount, closeTo(42, 0.001));
+    expect(expense.irpfAmount, closeTo(30, 0.001));
+    expect(expense.payableAmount, closeTo(212, 0.001));
+
+    final restored = Expense.fromJson(expense.toJson());
+    expect(restored.irpfRate, 15);
+    expect(restored.irpfAmount, closeTo(30, 0.001));
+  });
 }

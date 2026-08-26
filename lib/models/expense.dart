@@ -35,6 +35,7 @@ class Expense {
     required this.vatRate,
     required this.deductible,
     required this.paymentMethod,
+    this.irpfRate = 0,
     this.prorationMonths = 1,
     this.attachments = const [],
   }) : assert(prorationMonths > 0);
@@ -48,6 +49,7 @@ class Expense {
   final double vatRate;
   final bool deductible;
   final String paymentMethod;
+  final double irpfRate;
   final int prorationMonths;
   final List<ExpenseAttachment> attachments;
 
@@ -55,6 +57,8 @@ class Expense {
   double get baseAmount => amount / (1 + vatRate / 100);
   double get deductibleVat => deductible ? vatAmount : 0;
   double get deductibleBase => deductible ? baseAmount : 0;
+  double get irpfAmount => baseAmount * irpfRate / 100;
+  double get payableAmount => amount - irpfAmount;
   bool get isProrated => prorationMonths > 1;
   double get monthlyAmount => amount / prorationMonths;
   bool get hasReceipt => attachments.isNotEmpty;
@@ -84,6 +88,7 @@ class Expense {
     'vatRate': vatRate,
     'deductible': deductible,
     'paymentMethod': paymentMethod,
+    'irpfRate': irpfRate,
     'hasReceipt': hasReceipt,
     'prorationMonths': prorationMonths,
     'attachments': attachments.map((item) => item.toJson()).toList(),
@@ -105,6 +110,7 @@ class Expense {
       vatRate: (json['vatRate'] as num? ?? 0).toDouble(),
       deductible: json['deductible'] as bool? ?? true,
       paymentMethod: json['paymentMethod'] as String? ?? 'Tarjeta',
+      irpfRate: (json['irpfRate'] as num? ?? 0).toDouble(),
       prorationMonths:
           (json['prorationMonths'] as num?)?.toInt() ??
           (category == ExpenseCategory.insurance ? 12 : 1),
