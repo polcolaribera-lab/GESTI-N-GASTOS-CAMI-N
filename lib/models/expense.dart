@@ -1,3 +1,5 @@
+import 'expense_attachment.dart';
+
 enum ExpenseCategory {
   fuel,
   tolls,
@@ -34,7 +36,9 @@ class Expense {
     required this.deductible,
     required this.paymentMethod,
     this.hasReceipt = true,
-  });
+    this.prorationMonths = 1,
+    this.attachments = const [],
+  }) : assert(prorationMonths > 0);
 
   final String id;
   final String description;
@@ -46,11 +50,30 @@ class Expense {
   final bool deductible;
   final String paymentMethod;
   final bool hasReceipt;
+  final int prorationMonths;
+  final List<ExpenseAttachment> attachments;
 
   double get vatAmount => vatRate == 0 ? 0 : amount - baseAmount;
   double get baseAmount => amount / (1 + vatRate / 100);
   double get deductibleVat => deductible ? vatAmount : 0;
   double get deductibleBase => deductible ? baseAmount : 0;
+  bool get isProrated => prorationMonths > 1;
+  double get monthlyAmount => amount / prorationMonths;
+
+  bool appliesToMonth(DateTime month) {
+    final startMonth = date.year * 12 + date.month;
+    final targetMonth = month.year * 12 + month.month;
+    return targetMonth >= startMonth &&
+        targetMonth < startMonth + prorationMonths;
+  }
+
+  double amountForMonth(DateTime month) {
+    return appliesToMonth(month) ? monthlyAmount : 0;
+  }
+
+  double deductibleVatForMonth(DateTime month) {
+    return appliesToMonth(month) ? deductibleVat / prorationMonths : 0;
+  }
 
   Map<String, Object?> toJson() => {
     'id': id,
@@ -63,24 +86,38 @@ class Expense {
     'deductible': deductible,
     'paymentMethod': paymentMethod,
     'hasReceipt': hasReceipt,
+    'prorationMonths': prorationMonths,
+    'attachments': attachments.map((item) => item.toJson()).toList(),
   };
 
   factory Expense.fromJson(Map<String, dynamic> json) {
     final categoryName = json['category'] as String?;
+    final category = ExpenseCategory.values.firstWhere(
+      (item) => item.name == categoryName,
+      orElse: () => ExpenseCategory.other,
+    );
     return Expense(
       id: json['id'] as String,
       description: json['description'] as String? ?? 'Gasto',
       supplier: json['supplier'] as String? ?? '',
       amount: (json['amount'] as num).toDouble(),
       date: DateTime.parse(json['date'] as String),
-      category: ExpenseCategory.values.firstWhere(
-        (item) => item.name == categoryName,
-        orElse: () => ExpenseCategory.other,
-      ),
+      category: category,
       vatRate: (json['vatRate'] as num? ?? 0).toDouble(),
       deductible: json['deductible'] as bool? ?? true,
       paymentMethod: json['paymentMethod'] as String? ?? 'Tarjeta',
       hasReceipt: json['hasReceipt'] as bool? ?? true,
+      prorationMonths:
+          (json['prorationMonths'] as num?)?.toInt() ??
+          (category == ExpenseCategory.insurance ? 12 : 1),
+      attachments:
+          (json['attachments'] as List<dynamic>?)
+              ?.map(
+                (item) =>
+                    ExpenseAttachment.fromJson(item as Map<String, dynamic>),
+              )
+              .toList() ??
+          const [],
     );
   }
 }

@@ -6,10 +6,18 @@ import '../theme/app_theme.dart';
 import 'category_visuals.dart';
 
 class ExpenseTile extends StatelessWidget {
-  const ExpenseTile({required this.expense, super.key, this.compact = false});
+  const ExpenseTile({
+    required this.expense,
+    super.key,
+    this.compact = false,
+    this.editable = false,
+    this.displayAmount,
+  });
 
   final Expense expense;
   final bool compact;
+  final bool editable;
+  final double? displayAmount;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +41,7 @@ class ExpenseTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  '${expense.supplier} · ${shortDate(expense.date)}',
+                  '${expense.supplier} · ${shortDate(expense.date)}${expense.attachments.isEmpty ? '' : ' · ${expense.attachments.length} adj.'}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall,
@@ -46,39 +54,53 @@ class ExpenseTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                euro(expense.amount),
+                euro(displayAmount ?? expense.amount),
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontSize: compact ? 14 : 15),
               ),
               const SizedBox(height: 3),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: expense.deductible
-                          ? AppColors.primary
-                          : AppColors.muted,
-                      shape: BoxShape.circle,
-                    ),
+              if (expense.isProrated)
+                Text(
+                  '${expense.prorationMonths} meses · ${euro(expense.monthlyAmount)}/mes',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.primary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
                   ),
-                  const SizedBox(width: 5),
-                  Text(
-                    expense.deductible ? 'Deducible' : 'No deducible',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: expense.deductible
-                          ? AppColors.primary
-                          : AppColors.muted,
-                      fontWeight: FontWeight.w700,
+                )
+              else
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: expense.deductible
+                            ? AppColors.primary
+                            : AppColors.muted,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 5),
+                    Text(
+                      expense.deductible ? 'Deducible' : 'No deducible',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: expense.deductible
+                            ? AppColors.primary
+                            : AppColors.muted,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
+          if (editable) ...[
+            const SizedBox(width: 7),
+            const Icon(Icons.edit_outlined, size: 18, color: AppColors.muted),
+          ],
         ],
       ),
     );

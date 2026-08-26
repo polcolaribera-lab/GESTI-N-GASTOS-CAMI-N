@@ -158,7 +158,7 @@ class ProfilePage extends StatelessWidget {
                       Divider(height: 1),
                       _RoadmapRow(
                         icon: Icons.file_download_outlined,
-                        title: 'Exportar para la gestoría',
+                        title: 'Informes anuales comparativos',
                       ),
                       Divider(height: 1),
                       _RoadmapRow(

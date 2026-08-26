@@ -8,9 +8,10 @@ import '../theme/app_theme.dart';
 import '../widgets/page_header.dart';
 
 class FiscalPage extends StatelessWidget {
-  const FiscalPage({required this.expenses, super.key});
+  const FiscalPage({required this.expenses, required this.onExport, super.key});
 
   final List<Expense> expenses;
+  final Future<void> Function() onExport;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +36,7 @@ class FiscalPage extends StatelessWidget {
     );
     final total = quarterExpenses.fold(0.0, (sum, item) => sum + item.amount);
     final missingReceipts = quarterExpenses
-        .where((item) => !item.hasReceipt)
+        .where((item) => item.attachments.isEmpty)
         .length;
 
     return CustomScrollView(
@@ -91,6 +92,13 @@ class FiscalPage extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 14),
+              _ExportCard(
+                quarter: quarter,
+                year: now.year,
+                expenseCount: quarterExpenses.length,
+                onExport: onExport,
               ),
               const SizedBox(height: 28),
               Text(
@@ -174,6 +182,110 @@ class FiscalPage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ExportCard extends StatefulWidget {
+  const _ExportCard({
+    required this.quarter,
+    required this.year,
+    required this.expenseCount,
+    required this.onExport,
+  });
+
+  final int quarter;
+  final int year;
+  final int expenseCount;
+  final Future<void> Function() onExport;
+
+  @override
+  State<_ExportCard> createState() => _ExportCardState();
+}
+
+class _ExportCardState extends State<_ExportCard> {
+  bool _exporting = false;
+
+  Future<void> _export() async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
+    try {
+      await widget.onExport();
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.accentSoft,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.45)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 43,
+                height: 43,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.75),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.folder_zip_outlined,
+                  color: AppColors.primaryDark,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Paquete para la gestoría',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'CSV y justificantes del ${widget.quarter}T ${widget.year} · ${widget.expenseCount} gastos',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: AppColors.ink),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _exporting ? null : _export,
+              icon: _exporting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.ios_share_rounded),
+              label: Text(
+                _exporting ? 'Preparando paquete…' : 'Exportar para gestoría',
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

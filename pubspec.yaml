@@ -28,9 +28,14 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  archive: ^4.2.0
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  file_selector: ^1.1.0
+  hive_ce_flutter: ^2.3.4
+  image_picker: ^1.2.3
+  share_plus: ^13.3.0
   shared_preferences: ^2.5.3
 
 dev_dependencies:

@@ -11,12 +11,14 @@ class ExpensesPage extends StatefulWidget {
   const ExpensesPage({
     required this.expenses,
     required this.onAdd,
+    required this.onEdit,
     required this.onDelete,
     super.key,
   });
 
   final List<Expense> expenses;
   final VoidCallback onAdd;
+  final ValueChanged<Expense> onEdit;
   final ValueChanged<Expense> onDelete;
 
   @override
@@ -41,9 +43,41 @@ class _ExpensesPageState extends State<ExpensesPage> {
       final matchesSearch =
           query.isEmpty ||
           expense.description.toLowerCase().contains(query) ||
-          expense.supplier.toLowerCase().contains(query);
+          expense.supplier.toLowerCase().contains(query) ||
+          expense.attachments.any(
+            (item) => item.name.toLowerCase().contains(query),
+          );
       return matchesCategory && matchesSearch;
     }).toList()..sort((a, b) => b.date.compareTo(a.date));
+  }
+
+  Future<void> _confirmDelete(Expense expense) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.delete_outline_rounded, color: AppColors.danger),
+        title: const Text('¿Eliminar este gasto?'),
+        content: Text(
+          'Se eliminará “${expense.description}” por ${euro(expense.amount)}.',
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      widget.onDelete(expense);
+    }
   }
 
   @override
@@ -187,9 +221,49 @@ class _ExpensesPageState extends State<ExpensesPage> {
                   ),
                   onDismissed: (_) => widget.onDelete(expense),
                   child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: ExpenseTile(expense: expense),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                        InkWell(
+                          onTap: () => widget.onEdit(expense),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            child: ExpenseTile(expense: expense),
+                          ),
+                        ),
+                        const Divider(height: 1),
+                        SizedBox(
+                          height: 42,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextButton.icon(
+                                  onPressed: () => widget.onEdit(expense),
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    size: 18,
+                                  ),
+                                  label: const Text('Editar'),
+                                ),
+                              ),
+                              const VerticalDivider(width: 1),
+                              Expanded(
+                                child: TextButton.icon(
+                                  onPressed: () => _confirmDelete(expense),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: AppColors.danger,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.delete_outline_rounded,
+                                    size: 18,
+                                  ),
+                                  label: const Text('Eliminar'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );

@@ -9,6 +9,12 @@ preparado para Android/Google Play.
 - Alta rápida de gastos con categoría, proveedor, fecha y forma de pago.
 - Cálculo automático de base imponible e IVA incluido.
 - Histórico con búsqueda, filtros y borrado reversible.
+- Edición de cualquier gasto tocando su tarjeta.
+- Eliminación visible con confirmación y opción de deshacer.
+- Prorrateo mensual, trimestral, semestral o anual de seguros.
+- Captura de fotos y selección múltiple de facturas, tickets y documentos.
+- Justificantes guardados localmente y asociados a cada gasto.
+- Exportación trimestral ZIP para la gestoría con CSV, resumen y justificantes.
 - Resumen fiscal trimestral orientativo.
 - Persistencia local en el dispositivo.
 - Datos de ejemplo en el primer inicio para poder recorrer la interfaz.

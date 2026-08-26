@@ -16,6 +16,7 @@ class DashboardPage extends StatelessWidget {
     required this.onPreviousMonth,
     required this.onNextMonth,
     required this.onAdd,
+    required this.onEdit,
     required this.onSeeAll,
     super.key,
   });
@@ -25,6 +26,7 @@ class DashboardPage extends StatelessWidget {
   final VoidCallback onPreviousMonth;
   final VoidCallback? onNextMonth;
   final VoidCallback onAdd;
+  final ValueChanged<Expense> onEdit;
   final VoidCallback onSeeAll;
 
   static const _monthlyBudget = 2500.0;
@@ -33,20 +35,19 @@ class DashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final monthlyExpenses =
         expenses
-            .where(
-              (expense) =>
-                  expense.date.year == selectedMonth.year &&
-                  expense.date.month == selectedMonth.month,
-            )
+            .where((expense) => expense.appliesToMonth(selectedMonth))
             .toList()
           ..sort((a, b) => b.date.compareTo(a.date));
-    final total = monthlyExpenses.fold(0.0, (sum, item) => sum + item.amount);
+    final total = monthlyExpenses.fold(
+      0.0,
+      (sum, item) => sum + item.amountForMonth(selectedMonth),
+    );
     final deductible = monthlyExpenses
         .where((item) => item.deductible)
-        .fold(0.0, (sum, item) => sum + item.amount);
+        .fold(0.0, (sum, item) => sum + item.amountForMonth(selectedMonth));
     final vat = monthlyExpenses.fold(
       0.0,
-      (sum, item) => sum + item.deductibleVat,
+      (sum, item) => sum + item.deductibleVatForMonth(selectedMonth),
     );
 
     return CustomScrollView(
@@ -134,10 +135,14 @@ class DashboardPage extends StatelessWidget {
               const SizedBox(height: 28),
               _SectionTitle(title: 'Gasto por categoría'),
               const SizedBox(height: 12),
-              _CategoryBreakdown(expenses: monthlyExpenses, total: total),
+              _CategoryBreakdown(
+                expenses: monthlyExpenses,
+                total: total,
+                selectedMonth: selectedMonth,
+              ),
               const SizedBox(height: 28),
               _SectionTitle(
-                title: 'Últimos movimientos',
+                title: 'Costes imputados del mes',
                 action: monthlyExpenses.isEmpty ? null : 'Ver todos',
                 onAction: onSeeAll,
               ),
@@ -155,9 +160,16 @@ class DashboardPage extends StatelessWidget {
                           index < math.min(3, monthlyExpenses.length);
                           index++
                         ) ...[
-                          ExpenseTile(
-                            expense: monthlyExpenses[index],
-                            compact: true,
+                          InkWell(
+                            onTap: () => onEdit(monthlyExpenses[index]),
+                            borderRadius: BorderRadius.circular(14),
+                            child: ExpenseTile(
+                              expense: monthlyExpenses[index],
+                              compact: true,
+                              editable: true,
+                              displayAmount: monthlyExpenses[index]
+                                  .amountForMonth(selectedMonth),
+                            ),
                           ),
                           if (index < math.min(3, monthlyExpenses.length) - 1)
                             const Divider(height: 1),
@@ -312,7 +324,7 @@ class _BudgetCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      'GASTO DEL MES',
+                      'COSTE IMPUTADO DEL MES',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.white70,
                         fontWeight: FontWeight.w800,
@@ -478,10 +490,15 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _CategoryBreakdown extends StatelessWidget {
-  const _CategoryBreakdown({required this.expenses, required this.total});
+  const _CategoryBreakdown({
+    required this.expenses,
+    required this.total,
+    required this.selectedMonth,
+  });
 
   final List<Expense> expenses;
   final double total;
+  final DateTime selectedMonth;
 
   @override
   Widget build(BuildContext context) {
@@ -501,8 +518,8 @@ class _CategoryBreakdown extends StatelessWidget {
     for (final expense in expenses) {
       totals.update(
         expense.category,
-        (amount) => amount + expense.amount,
-        ifAbsent: () => expense.amount,
+        (amount) => amount + expense.amountForMonth(selectedMonth),
+        ifAbsent: () => expense.amountForMonth(selectedMonth),
       );
     }
     final rows = totals.entries.toList()

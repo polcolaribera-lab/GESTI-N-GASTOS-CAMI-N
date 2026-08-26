@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
+import '../data/attachment_repository.dart';
 import '../data/expense_repository.dart';
 import '../models/expense.dart';
+import '../services/gestoria_export_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/expense_form.dart';
 import 'dashboard_page.dart';
@@ -10,9 +13,14 @@ import 'fiscal_page.dart';
 import 'profile_page.dart';
 
 class HomeShell extends StatefulWidget {
-  const HomeShell({required this.repository, super.key});
+  const HomeShell({
+    required this.repository,
+    required this.attachmentRepository,
+    super.key,
+  });
 
   final ExpenseRepository repository;
+  final AttachmentRepository attachmentRepository;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -39,8 +47,9 @@ class _HomeShellState extends State<HomeShell> {
     });
   }
 
-  Future<void> _showExpenseForm() async {
-    final expense = await showModalBottomSheet<Expense>(
+  Future<void> _showExpenseForm([Expense? existingExpense]) async {
+    final isEditing = existingExpense != null;
+    final result = await showModalBottomSheet<ExpenseFormResult>(
       context: context,
       isScrollControlled: true,
       useSafeArea: false,
@@ -49,20 +58,59 @@ class _HomeShellState extends State<HomeShell> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (context) => const ExpenseForm(),
+      builder: (context) => ExpenseForm(
+        expense: existingExpense,
+        attachmentRepository: widget.attachmentRepository,
+      ),
     );
 
-    if (expense == null || !mounted) return;
+    if (result == null || !mounted) return;
+    final expense = result.expense;
+    final retainedIds = expense.attachments.map((item) => item.id).toSet();
+    final removedAttachmentIds =
+        existingExpense?.attachments
+            .where((item) => !retainedIds.contains(item.id))
+            .map((item) => item.id) ??
+        const Iterable<String>.empty();
+
+    try {
+      await widget.attachmentRepository.saveAll(result.newFiles);
+      await widget.attachmentRepository.deleteAll(removedAttachmentIds);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudieron guardar los justificantes.'),
+          backgroundColor: AppColors.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (!mounted) return;
     setState(() {
-      _expenses = [..._expenses, expense]
-        ..sort((a, b) => b.date.compareTo(a.date));
+      final updatedExpenses = [..._expenses];
+      final existingIndex = updatedExpenses.indexWhere(
+        (item) => item.id == expense.id,
+      );
+      if (existingIndex >= 0) {
+        updatedExpenses[existingIndex] = expense;
+      } else {
+        updatedExpenses.add(expense);
+      }
+      _expenses = updatedExpenses..sort((a, b) => b.date.compareTo(a.date));
       _selectedMonth = DateTime(expense.date.year, expense.date.month);
     });
     await widget.repository.saveExpenses(_expenses);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Gasto guardado correctamente'),
+      SnackBar(
+        content: Text(
+          isEditing
+              ? 'Gasto actualizado correctamente'
+              : 'Gasto guardado correctamente',
+        ),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -77,26 +125,88 @@ class _HomeShellState extends State<HomeShell> {
     if (!mounted) return;
 
     var restored = false;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: const Text('Gasto eliminado'),
-          behavior: SnackBarBehavior.floating,
-          action: SnackBarAction(
-            label: 'DESHACER',
-            onPressed: () async {
-              if (restored || !mounted) return;
-              restored = true;
-              setState(() {
-                final insertAt = originalIndex.clamp(0, _expenses.length);
-                _expenses.insert(insertAt, expense);
-              });
-              await widget.repository.saveExpenses(_expenses);
-            },
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    final controller = messenger.showSnackBar(
+      SnackBar(
+        content: const Text('Gasto eliminado'),
+        behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: 'DESHACER',
+          onPressed: () async {
+            if (restored || !mounted) return;
+            restored = true;
+            setState(() {
+              final insertAt = originalIndex.clamp(0, _expenses.length);
+              _expenses.insert(insertAt, expense);
+            });
+            await widget.repository.saveExpenses(_expenses);
+          },
+        ),
+      ),
+    );
+    await controller.closed;
+    if (!restored) {
+      await widget.attachmentRepository.deleteAll(
+        expense.attachments.map((item) => item.id),
+      );
+    }
+  }
+
+  Future<void> _exportCurrentQuarter() async {
+    final now = DateTime.now();
+    final quarter = ((now.month - 1) ~/ 3) + 1;
+    try {
+      final package = await GestoriaExportService(widget.attachmentRepository)
+          .buildQuarterPackage(
+            expenses: _expenses,
+            year: now.year,
+            quarter: quarter,
+          );
+      if (!mounted) return;
+      if (package.expenseCount == 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No hay gastos en el ${quarter}T de ${now.year}.'),
+            behavior: SnackBarBehavior.floating,
           ),
+        );
+        return;
+      }
+
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile.fromData(package.bytes, mimeType: 'application/zip')],
+          fileNameOverrides: [package.fileName],
+          title: 'Exportación RutaClara',
+          subject: 'Gastos ${quarter}T ${now.year}',
+          text:
+              'Paquete de gastos y justificantes de RutaClara · ${quarter}T ${now.year}',
+          downloadFallbackEnabled: true,
         ),
       );
+      if (!mounted) return;
+      final documentWarning = package.withoutDigitalReceiptCount == 0
+          ? ''
+          : ' · ${package.withoutDigitalReceiptCount} sin documento digital';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Paquete preparado: ${package.attachmentCount} justificantes$documentWarning',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo crear la exportación para la gestoría.'),
+          backgroundColor: AppColors.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   void _previousMonth() {
@@ -132,15 +242,20 @@ class _HomeShellState extends State<HomeShell> {
                   selectedMonth: _selectedMonth,
                   onPreviousMonth: _previousMonth,
                   onNextMonth: isCurrentMonth ? null : _nextMonth,
-                  onAdd: _showExpenseForm,
+                  onAdd: () => _showExpenseForm(),
+                  onEdit: _showExpenseForm,
                   onSeeAll: () => setState(() => _selectedIndex = 1),
                 ),
                 ExpensesPage(
                   expenses: _expenses,
-                  onAdd: _showExpenseForm,
+                  onAdd: () => _showExpenseForm(),
+                  onEdit: _showExpenseForm,
                   onDelete: _deleteExpense,
                 ),
-                FiscalPage(expenses: _expenses),
+                FiscalPage(
+                  expenses: _expenses,
+                  onExport: _exportCurrentQuarter,
+                ),
                 const ProfilePage(),
               ],
             ),
