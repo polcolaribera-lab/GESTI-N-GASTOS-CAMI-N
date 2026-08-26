@@ -44,7 +44,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
   DateTime _date = DateTime.now();
   double _vatRate = 21;
   bool _deductible = true;
-  bool _hasReceipt = true;
   String _paymentMethod = 'Tarjeta';
   int _prorationMonths = 1;
   bool _pickingAttachment = false;
@@ -69,7 +68,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
     _date = expense.date;
     _vatRate = expense.vatRate;
     _deductible = expense.deductible;
-    _hasReceipt = expense.hasReceipt;
     _paymentMethod = expense.paymentMethod;
     _prorationMonths = expense.prorationMonths;
     _attachments = [...expense.attachments];
@@ -223,7 +221,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
     setState(() {
       _attachments.add(attachment);
       _newFiles[id] = bytes;
-      _hasReceipt = true;
     });
   }
 
@@ -327,7 +324,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
           vatRate: _vatRate,
           deductible: _deductible,
           paymentMethod: _paymentMethod,
-          hasReceipt: _hasReceipt || _attachments.isNotEmpty,
           prorationMonths: _category == ExpenseCategory.insurance
               ? _prorationMonths
               : 1,
@@ -674,13 +670,10 @@ class _ExpenseFormState extends State<ExpenseForm> {
                         icon: Icons.receipt_rounded,
                         title: 'Tengo justificante',
                         subtitle: _attachments.isEmpty
-                            ? 'Factura o ticket guardado'
-                            : '${_attachments.length} ${_attachments.length == 1 ? 'archivo asociado' : 'archivos asociados'}',
-                        value: _hasReceipt || _attachments.isNotEmpty,
-                        onChanged: (value) {
-                          if (_attachments.isNotEmpty && !value) return;
-                          setState(() => _hasReceipt = value);
-                        },
+                            ? 'Añade una foto o archivo del ticket o factura'
+                            : '${_attachments.length} ${_attachments.length == 1 ? 'justificante adjunto' : 'justificantes adjuntos'}',
+                        value: _attachments.isNotEmpty,
+                        onChanged: null,
                       ),
                       const SizedBox(height: 20),
                       _FieldLabel(
@@ -945,7 +938,7 @@ class _SwitchRow extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged;
 
   @override
   Widget build(BuildContext context) {

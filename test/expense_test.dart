@@ -71,4 +71,40 @@ void main() {
     expect(restored.attachments.single.name, 'factura.pdf');
     expect(restored.attachments.single.size, 2048);
   });
+
+  test('solo marca justificante cuando hay una foto o archivo adjunto', () {
+    final withoutAttachment = Expense(
+      id: 'without-attachment',
+      description: 'Peaje',
+      supplier: 'Autopista',
+      amount: 12,
+      date: DateTime(2026, 8, 20),
+      category: ExpenseCategory.tolls,
+      vatRate: 21,
+      deductible: true,
+      paymentMethod: 'Tarjeta',
+    );
+    final withAttachment = Expense(
+      id: 'with-attachment',
+      description: 'Peaje',
+      supplier: 'Autopista',
+      amount: 12,
+      date: DateTime(2026, 8, 20),
+      category: ExpenseCategory.tolls,
+      vatRate: 21,
+      deductible: true,
+      paymentMethod: 'Tarjeta',
+      attachments: const [
+        ExpenseAttachment(
+          id: 'ticket-photo',
+          name: 'ticket.jpg',
+          mimeType: 'image/jpeg',
+          size: 1024,
+        ),
+      ],
+    );
+
+    expect(withoutAttachment.hasReceipt, isFalse);
+    expect(withAttachment.hasReceipt, isTrue);
+  });
 }

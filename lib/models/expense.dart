@@ -35,7 +35,6 @@ class Expense {
     required this.vatRate,
     required this.deductible,
     required this.paymentMethod,
-    this.hasReceipt = true,
     this.prorationMonths = 1,
     this.attachments = const [],
   }) : assert(prorationMonths > 0);
@@ -49,7 +48,6 @@ class Expense {
   final double vatRate;
   final bool deductible;
   final String paymentMethod;
-  final bool hasReceipt;
   final int prorationMonths;
   final List<ExpenseAttachment> attachments;
 
@@ -59,6 +57,7 @@ class Expense {
   double get deductibleBase => deductible ? baseAmount : 0;
   bool get isProrated => prorationMonths > 1;
   double get monthlyAmount => amount / prorationMonths;
+  bool get hasReceipt => attachments.isNotEmpty;
 
   bool appliesToMonth(DateTime month) {
     final startMonth = date.year * 12 + date.month;
@@ -106,7 +105,6 @@ class Expense {
       vatRate: (json['vatRate'] as num? ?? 0).toDouble(),
       deductible: json['deductible'] as bool? ?? true,
       paymentMethod: json['paymentMethod'] as String? ?? 'Tarjeta',
-      hasReceipt: json['hasReceipt'] as bool? ?? true,
       prorationMonths:
           (json['prorationMonths'] as num?)?.toInt() ??
           (category == ExpenseCategory.insurance ? 12 : 1),
