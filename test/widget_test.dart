@@ -15,7 +15,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('RutaClara'), findsOneWidget);
+    expect(find.text('Ruta Clara'), findsOneWidget);
     expect(find.text('Resumen'), findsOneWidget);
     expect(find.text('Gastos'), findsOneWidget);
     expect(find.text('Fiscal'), findsOneWidget);
@@ -113,6 +113,35 @@ void main() {
       findsOneWidget,
     );
     await tester.tap(find.widgetWithText(FilledButton, 'Cerrar sesión'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bienvenido de nuevo'), findsOneWidget);
+  });
+
+  testWidgets('elimina la cuenta desde Mi negocio', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+
+    await tester.pumpWidget(
+      RutaClaraApp(authService: FakeAuthService.signedIn()),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mi negocio'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.widgetWithText(TextButton, 'Eliminar mi cuenta'),
+      500,
+      scrollable: find.descendant(
+        of: find.byKey(const PageStorageKey('profile')),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.tap(find.widgetWithText(TextButton, 'Eliminar mi cuenta'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('¿Eliminar tu cuenta?'), findsOneWidget);
+    await tester.tap(
+      find.widgetWithText(FilledButton, 'Eliminar definitivamente'),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Bienvenido de nuevo'), findsOneWidget);

@@ -1,4 +1,4 @@
-# RutaClara
+# Ruta Clara
 
 MVP de un gestor de gastos para transportistas autónomos, creado con Flutter y
 preparado para Android/Google Play.
@@ -20,6 +20,7 @@ preparado para Android/Google Play.
 - Registro e inicio de sesión con correo y contraseña mediante Firebase.
 - Inicio de sesión con una cuenta de Google en Android y web.
 - Recuperación de contraseña, sesión persistente y cierre de sesión.
+- Eliminación definitiva de la cuenta y sus datos locales desde la app.
 - Persistencia local separada para cada cuenta en el dispositivo.
 - Datos de ejemplo en el primer inicio para poder recorrer la interfaz.
 
@@ -46,10 +47,22 @@ Android y web. Los proveedores Correo/Contraseña y Google están declarados en
 firebase deploy --only auth --project rutaclara-gastos-polco
 ```
 
-La huella SHA del certificado de desarrollo ya está registrada. Antes de
-publicar en Google Play hay que registrar también en Firebase la huella SHA-1
-del certificado de firma de aplicaciones que muestre Play Console y volver a
-descargar `android/app/google-services.json`.
+Las huellas SHA de desarrollo y de la clave de subida ya están registradas. Tras
+subir el primer AAB, hay que registrar también en Firebase las huellas del
+certificado de **firma de aplicaciones** que muestre Play Console y volver a
+generar `android/app/google-services.json`.
+
+La política de privacidad y la solicitud externa de eliminación están
+publicadas en Firebase Hosting:
+
+- `https://rutaclara-gastos-polco.web.app/privacidad`
+- `https://rutaclara-gastos-polco.web.app/eliminar-cuenta`
+
+Se actualizan con:
+
+```powershell
+firebase deploy --only hosting --project rutaclara-gastos-polco
+```
 
 Para comprobar el proyecto:
 
@@ -65,9 +78,13 @@ flutter build appbundle --release
 ```
 
 El archivo resultante estará en
-`build/app/outputs/bundle/release/app-release.aab`. Antes de publicarlo hay que
-configurar una clave de firma propia y revisar el identificador
-`com.rutaclara.ruta_clara`.
+`build/app/outputs/bundle/release/app-release.aab`. La compilación de producción
+usa la clave configurada en el archivo local e ignorado `android/key.properties`.
+La clave privada y sus credenciales deben conservarse fuera de Git y con copia
+de seguridad. El identificador definitivo es `com.rutaclara.ruta_clara`.
+
+Los textos, el icono, el gráfico promocional, las capturas y la guía de
+seguridad de datos están en `play_store_assets`.
 
 ## Estructura
 
@@ -76,6 +93,6 @@ configurar una clave de firma propia y revisar el identificador
 - `lib/data`: guardado local.
 - `lib/screens`: panel, gastos, fiscal y perfil.
 - `lib/widgets`: componentes reutilizables y formulario.
-- `lib/theme`: colores y estilos de RutaClara.
+- `lib/theme`: colores y estilos de Ruta Clara.
 
 La estimación fiscal es informativa y no sustituye el criterio de una gestoría.

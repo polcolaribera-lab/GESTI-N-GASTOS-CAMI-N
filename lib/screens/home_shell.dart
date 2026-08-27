@@ -19,6 +19,7 @@ class HomeShell extends StatefulWidget {
     required this.attachmentRepository,
     required this.user,
     required this.onSignOut,
+    required this.onDeleteAccount,
     super.key,
   });
 
@@ -26,6 +27,7 @@ class HomeShell extends StatefulWidget {
   final AttachmentRepository attachmentRepository;
   final AuthUser user;
   final Future<void> Function() onSignOut;
+  final Future<void> Function() onDeleteAccount;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -158,6 +160,19 @@ class _HomeShellState extends State<HomeShell> {
     }
   }
 
+  Future<void> _deleteAccount() async {
+    final attachmentIds = _expenses
+        .expand((expense) => expense.attachments)
+        .map((attachment) => attachment.id)
+        .toList();
+
+    await widget.onDeleteAccount();
+    await Future.wait([
+      widget.attachmentRepository.deleteAll(attachmentIds),
+      widget.repository.deleteAll(),
+    ]);
+  }
+
   Future<void> _exportCurrentQuarter() async {
     final now = DateTime.now();
     final quarter = ((now.month - 1) ~/ 3) + 1;
@@ -183,10 +198,10 @@ class _HomeShellState extends State<HomeShell> {
         ShareParams(
           files: [XFile.fromData(package.bytes, mimeType: 'application/zip')],
           fileNameOverrides: [package.fileName],
-          title: 'Exportación RutaClara',
+          title: 'Exportación Ruta Clara',
           subject: 'Gastos ${quarter}T ${now.year}',
           text:
-              'Paquete de gastos y justificantes de RutaClara · ${quarter}T ${now.year}',
+              'Paquete de gastos y justificantes de Ruta Clara · ${quarter}T ${now.year}',
           downloadFallbackEnabled: true,
         ),
       );
@@ -261,7 +276,11 @@ class _HomeShellState extends State<HomeShell> {
                   expenses: _expenses,
                   onExport: _exportCurrentQuarter,
                 ),
-                ProfilePage(user: widget.user, onSignOut: widget.onSignOut),
+                ProfilePage(
+                  user: widget.user,
+                  onSignOut: widget.onSignOut,
+                  onDeleteAccount: _deleteAccount,
+                ),
               ],
             ),
       bottomNavigationBar: _loading
@@ -326,7 +345,7 @@ class _LoadingView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          Text('RutaClara', style: Theme.of(context).textTheme.titleLarge),
+          Text('Ruta Clara', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 15),
           const SizedBox(
             width: 22,

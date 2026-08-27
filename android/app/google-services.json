@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "753904785869-vk54v6bqp4llco0udnq7rgt35d1gbrlq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rutaclara.ruta_clara",
+            "certificate_hash": "831c63cdf8032921a5b1f27dcd441135e10563c8"
+          }
+        },
+        {
           "client_id": "753904785869-2ru0k6ohi29ghumm6268g9qou1r24al9.apps.googleusercontent.com",
           "client_type": 3
         }

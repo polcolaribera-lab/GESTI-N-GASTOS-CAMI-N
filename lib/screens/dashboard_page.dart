@@ -58,7 +58,7 @@ class DashboardPage extends StatelessWidget {
           sliver: SliverList.list(
             children: [
               PageHeader(
-                title: 'RutaClara',
+                title: 'Ruta Clara',
                 subtitle: 'Tu negocio, bajo control',
                 trailing: Container(
                   padding: const EdgeInsets.symmetric(
@@ -274,7 +274,7 @@ class _BudgetCard extends StatelessWidget {
     final remaining = budget - total;
 
     return Container(
-      height: 218,
+      height: 240,
       decoration: BoxDecoration(
         color: AppColors.primaryDark,
         borderRadius: BorderRadius.circular(26),
@@ -323,15 +323,19 @@ class _BudgetCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      'COSTE IMPUTADO DEL MES',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.1,
+                    Expanded(
+                      child: Text(
+                        'COSTE IMPUTADO DEL MES',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.1,
+                        ),
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: 10),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 9,

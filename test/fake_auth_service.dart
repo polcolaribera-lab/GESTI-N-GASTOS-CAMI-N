@@ -36,6 +36,12 @@ class FakeAuthService implements AuthService {
   Future<void> sendPasswordResetEmail(String email) async {}
 
   @override
+  Future<void> deleteAccount() async {
+    _currentUser = null;
+    _changes.add(null);
+  }
+
+  @override
   Future<void> signIn({required String email, required String password}) async {
     _currentUser = AuthUser(uid: 'signed-in-user', email: email.trim());
     _changes.add(_currentUser);

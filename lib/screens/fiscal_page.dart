@@ -337,13 +337,17 @@ class _FiscalHero extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 11),
-              const Text(
-                'IVA SOPORTADO DEDUCIBLE',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.7,
+              const Expanded(
+                child: Text(
+                  'IVA SOPORTADO DEDUCIBLE',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.7,
+                  ),
                 ),
               ),
             ],
@@ -365,17 +369,26 @@ class _FiscalHero extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Text(
-                  'Base deducible',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                const Expanded(
+                  child: Text(
+                    'Base deducible',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
                 ),
-                const Spacer(),
-                Text(
-                  euro(deductibleBase),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
+                const SizedBox(width: 8),
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      euro(deductibleBase),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -390,17 +403,26 @@ class _FiscalHero extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Text(
-                  'IRPF retenido en gastos',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                const Expanded(
+                  child: Text(
+                    'IRPF retenido en gastos',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
                 ),
-                const Spacer(),
-                Text(
-                  euro(withheldIrpf),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
+                const SizedBox(width: 8),
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      euro(withheldIrpf),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
                 ),
               ],

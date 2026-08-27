@@ -1,1 +1,48 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"rutaclara-gastos-polco","appId":"1:753904785869:android:43885016097a896444cc84","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"rutaclara-gastos-polco","configurations":{"android":"1:753904785869:android:43885016097a896444cc84","web":"1:753904785869:web:df783251d164cbbb44cc84"}}}}},"auth":{"providers":{"emailPassword":true,"googleSignIn":{"oAuthBrandDisplayName":"RutaClara","supportEmail":"polcolaribera@gmail.com"}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "rutaclara-gastos-polco",
+          "appId": "1:753904785869:android:43885016097a896444cc84",
+          "fileOutput": "android/app/google-services.json"
+        },
+        "buildConfigurations": {
+          ".": {
+            "projectId": "rutaclara-gastos-polco",
+            "appId": "1:753904785869:android:43885016097a896444cc84",
+            "fileOutput": "android/app/google-services.json"
+          }
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "rutaclara-gastos-polco",
+          "configurations": {
+            "android": "1:753904785869:android:43885016097a896444cc84",
+            "web": "1:753904785869:web:df783251d164cbbb44cc84"
+          }
+        }
+      }
+    }
+  },
+  "auth": {
+    "providers": {
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Ruta Clara",
+        "supportEmail": "polcolaribera@gmail.com"
+      }
+    }
+  },
+  "hosting": {
+    "public": "hosting",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "cleanUrls": true,
+    "trailingSlash": false
+  }
+}

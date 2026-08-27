@@ -40,7 +40,7 @@ class RutaClaraApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'RutaClara',
+      title: 'Ruta Clara',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       home: AuthGate(

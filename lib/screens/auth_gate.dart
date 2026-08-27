@@ -43,6 +43,7 @@ class AuthGate extends StatelessWidget {
           attachmentRepository: attachmentRepository ?? AttachmentRepository(),
           user: user,
           onSignOut: authService.signOut,
+          onDeleteAccount: authService.deleteAccount,
         );
       },
     );
@@ -91,7 +92,7 @@ class _AuthErrorView extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Cierra y vuelve a abrir RutaClara cuando tengas conexión.',
+                'Cierra y vuelve a abrir Ruta Clara cuando tengas conexión.',
                 style: Theme.of(context).textTheme.bodySmall,
                 textAlign: TextAlign.center,
               ),

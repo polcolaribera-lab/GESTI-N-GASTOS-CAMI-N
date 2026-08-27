@@ -27,5 +27,7 @@ abstract interface class AuthService {
 
   Future<void> sendPasswordResetEmail(String email);
 
+  Future<void> deleteAccount();
+
   Future<void> signOut();
 }

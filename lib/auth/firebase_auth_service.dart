@@ -93,6 +93,32 @@ class FirebaseAuthService implements AuthService {
   }
 
   @override
+  Future<void> deleteAccount() async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw const AuthFailure('No hay ninguna cuenta iniciada.');
+    }
+    final signedInWithGoogle = user.providerData.any(
+      (provider) => provider.providerId == GoogleAuthProvider.PROVIDER_ID,
+    );
+
+    try {
+      await user.delete();
+      if (!kIsWeb && signedInWithGoogle) {
+        try {
+          await _initializeGoogleSignIn();
+          await _googleSignIn.signOut();
+        } catch (_) {
+          // La cuenta de Firebase ya se ha eliminado. La limpieza local de
+          // Google no debe impedir que se borren los datos del dispositivo.
+        }
+      }
+    } on FirebaseAuthException catch (error) {
+      throw AuthFailure(_messageFor(error));
+    }
+  }
+
+  @override
   Future<void> signOut() async {
     final signedInWithGoogle = _firebaseAuth.currentUser?.providerData.any(
       (provider) => provider.providerId == GoogleAuthProvider.PROVIDER_ID,
@@ -104,7 +130,7 @@ class FirebaseAuthService implements AuthService {
         await _googleSignIn.signOut();
       } catch (_) {
         // Firebase ya ha cerrado la sesión. La limpieza local de Google es
-        // secundaria y no debe impedir que el usuario salga de RutaClara.
+        // secundaria y no debe impedir que el usuario salga de Ruta Clara.
       }
     }
   }
@@ -114,7 +140,7 @@ class FirebaseAuthService implements AuthService {
   }
 
   static AuthUser _toAuthUser(User user) {
-    return AuthUser(uid: user.uid, email: user.email ?? 'Cuenta de RutaClara');
+    return AuthUser(uid: user.uid, email: user.email ?? 'Cuenta de Ruta Clara');
   }
 
   static String _messageFor(FirebaseAuthException error) {
@@ -132,6 +158,8 @@ class FirebaseAuthService implements AuthService {
         'No se pudo conectar. Revisa tu conexión a internet.',
       'operation-not-allowed' =>
         'El acceso con correo todavía no está habilitado.',
+      'requires-recent-login' =>
+        'Por seguridad, cierra la sesión, vuelve a entrar y repite la eliminación.',
       'account-exists-with-different-credential' =>
         'Ya existe una cuenta con este correo. Entra con el método que usaste anteriormente.',
       'popup-blocked' =>

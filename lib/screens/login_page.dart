@@ -473,7 +473,7 @@ class _LoginPageState extends State<LoginPage> {
                                       : Text(
                                           _isRegistering
                                               ? 'Crear mi cuenta'
-                                              : 'Entrar en RutaClara',
+                                              : 'Entrar en Ruta Clara',
                                         ),
                                 ),
                               ],
@@ -566,7 +566,7 @@ class _BrandHeader extends StatelessWidget {
           child: const Icon(Icons.route_rounded, color: Colors.white, size: 38),
         ),
         const SizedBox(height: 15),
-        Text('RutaClara', style: Theme.of(context).textTheme.displaySmall),
+        Text('Ruta Clara', style: Theme.of(context).textTheme.displaySmall),
         const SizedBox(height: 5),
         Text(
           'Tus gastos de ruta, bajo control',

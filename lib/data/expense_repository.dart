@@ -55,6 +55,16 @@ class ExpenseRepository {
     await preferences.setString(_storageKey, encoded);
   }
 
+  Future<void> deleteAll() async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.remove(_storageKey);
+
+    if (_userId != null && preferences.getString(_legacyOwnerKey) == _userId) {
+      await preferences.remove(_legacyStorageKey);
+      await preferences.remove(_legacyOwnerKey);
+    }
+  }
+
   List<Expense> _exampleExpenses() {
     final now = DateTime.now();
     DateTime day(int value) => DateTime(now.year, now.month, value);
